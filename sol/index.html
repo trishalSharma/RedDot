@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sol — Your red dot on a red planet</title>
+  <meta name="description" content="Plant your mark on Mars. Watch it terraform together." />
+  <meta property="og:title" content="Sol" />
+  <meta property="og:description" content="One planet. Eight billion dots. Plant yours." />
+  <meta property="og:image" content="/og.png" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- LOADING SCREEN -->
+  <div id="loadingScreen">
+    <div class="loading-inner">
+      <div class="loading-logo">SOL</div>
+      <div class="loading-sub">initialising approach vector</div>
+      <div class="loading-bar-track">
+        <div class="loading-bar-fill" id="loadingBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header id="header">
+    <div class="header-left">
+      <div class="logo">SOL</div>
+      <div class="tagline">your red dot on a red planet</div>
+    </div>
+    <div class="header-center">
+      <div class="progress-wrap" id="terraformProgress">
+        <span class="progress-label">TERRAFORMING</span>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <span class="progress-pct" id="progressPct">0%</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="counter-pill" id="plantsCounter">
+        <span class="counter-icon">🚀</span>
+        <span id="plantsLeft">3</span>/3 today
+      </div>
+      <button class="btn-ghost" id="btnViewMine">My Dot</button>
+    </div>
+  </header>
+
+  <!-- CANVAS (Three.js mounts here) -->
+  <canvas id="marsCanvas"></canvas>
+
+  <!-- AMBIENT STARS OVERLAY -->
+  <div id="starsOverlay"></div>
+
+  <!-- PLANT PANEL (bottom) -->
+  <div id="plantPanel" class="panel hidden">
+    <div class="panel-inner">
+      <div class="panel-title">
+        <span id="panelCoords">0°N 0°E</span>
+        <span class="panel-subtitle" id="panelRegion">— open terrain —</span>
+      </div>
+
+      <div class="type-selector">
+        <button class="type-btn active" data-type="rocket">
+          <span class="type-icon">🚀</span>
+          <span>Rocket</span>
+        </button>
+        <button class="type-btn" data-type="habitat">
+          <span class="type-icon">🏠</span>
+          <span>Habitat</span>
+        </button>
+        <button class="type-btn" data-type="rover">
+          <span class="type-icon">🤖</span>
+          <span>Rover</span>
+        </button>
+      </div>
+
+      <input
+        id="claimName"
+        class="text-input"
+        placeholder="Name your claim (optional)..."
+        maxlength="48"
+      />
+
+      <textarea
+        id="claimMessage"
+        class="text-input textarea"
+        placeholder="Leave a message for future explorers... or seal it as a time capsule 🔒"
+        maxlength="280"
+        rows="3"
+      ></textarea>
+
+      <div class="capsule-row">
+        <label class="toggle-label">
+          <input type="checkbox" id="capsuleToggle" />
+          <span class="toggle-track"></span>
+          <span>Time capsule — seal until</span>
+        </label>
+        <select id="capsuleDate" class="select-input" disabled>
+          <option value="">Choose launch window...</option>
+          <option value="2026-12-31">End of 2026</option>
+          <option value="2028-01-01">Mars Opposition 2028</option>
+          <option value="2030-01-01">2030</option>
+          <option value="2035-01-01">2035 — First Crewed Mars Mission (est.)</option>
+        </select>
+      </div>
+
+      <div class="panel-actions">
+        <button class="btn-ghost" id="btnCancel">Cancel</button>
+        <button class="btn-primary" id="btnPlant">Plant it →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOT TOOLTIP (hover) -->
+  <div id="dotTooltip" class="tooltip hidden">
+    <div class="tooltip-header">
+      <span id="tooltipIcon">🚀</span>
+      <span id="tooltipName">Unnamed</span>
+    </div>
+    <div class="tooltip-handle" id="tooltipHandle">@unknown</div>
+    <div class="tooltip-msg" id="tooltipMsg"></div>
+    <div class="tooltip-coords" id="tooltipCoords"></div>
+    <div class="tooltip-capsule hidden" id="tooltipCapsule">🔒 sealed until <span id="tooltipCapsuleDate"></span></div>
+  </div>
+
+  <!-- MISSION LOG MODAL -->
+  <div id="missionLogModal" class="modal hidden">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-badge">MISSION LOG</span>
+        <button class="modal-close" id="btnCloseMission">✕</button>
+      </div>
+      <div class="modal-coords" id="missionCoords"></div>
+      <div class="modal-log" id="missionLogText">
+        <div class="log-loading">
+          <span class="dot-pulse"></span>
+          Generating mission entry...
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-share" id="btnShare">
+          Share on X →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLONY TOAST -->
+  <div id="colonyToast" class="toast hidden">
+    <span class="toast-icon">🏘️</span>
+    <span id="toastText">Colony formed!</span>
+  </div>
+
+  <!-- RESOURCE BADGE TOAST -->
+  <div id="resourceToast" class="toast toast-resource hidden">
+    <span class="toast-icon" id="resourceIcon">⛏️</span>
+    <span id="resourceText">Rare deposit found!</span>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
