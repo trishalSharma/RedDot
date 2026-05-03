@@ -13,20 +13,24 @@ export default function handler(req, res) {
         <meta charset="utf-8" />
         <title>SolMars 🚀</title>
 
+        <!-- OG -->
         <meta property="og:title" content="I planted on Mars 🚀" />
         <meta property="og:description" content="Join me in terraforming Mars" />
         <meta property="og:image" content="${ogImageUrl}" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="${APP_URL}/dot/${id}" />
 
+        <!-- Twitter -->
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="I planted on Mars 🚀" />
-        <meta name="twitter:description" content="Join me in terraforming Mars" />
         <meta name="twitter:image" content="${ogImageUrl}" />
 
-        <meta http-equiv="refresh" content="0; url=/?dot=${id}" />
+        <!-- IMPORTANT: delay redirect -->
+        <meta http-equiv="refresh" content="2; url=/?dot=${id}" />
       </head>
-      <body></body>
+
+      <body style="background:black;color:white;display:flex;align-items:center;justify-content:center;height:100vh;">
+        <p>Loading Mars...</p>
+      </body>
     </html>
   `);
 }
