@@ -1,11 +1,12 @@
 import { formatCoords } from './ai.js'
 
-const APP_URL = import.meta.env.VITE_APP_URL || 'https://sol-mars.vercel.app'
+const APP_URL =
+  import.meta.env.VITE_APP_URL || 'https://reddotmars.vercel.app'
 
 const TYPE_EMOJI = {
-  rocket:  '🚀',
+  rocket: '🚀',
   habitat: '🏠',
-  rover:   '🤖',
+  rover: '🤖',
 }
 
 /**
@@ -19,10 +20,10 @@ export function shareOnX(dot, missionLog = '') {
   const name = dot.name ? `"${dot.name}" ` : ''
   const region = dot.region ? `near ${dot.region}` : 'on Mars'
 
-  // ⭐ NEW: unique share URL for this dot
-  const shareUrl = `${APP_URL}/dot/${dot.id}`
+  // ✅ IMPORTANT: unique share URL (with cache buster)
+  const shareUrl = `${APP_URL}/dot/${dot.id}?v=${Date.now()}`
 
-  // Pull first sentence of mission log for the tweet
+  // Extract first sentence
   const logSnippet = missionLog
     ? missionLog.split('.')[0].replace(/\n/g, ' ').trim() + '.'
     : ''
@@ -30,23 +31,23 @@ export function shareOnX(dot, missionLog = '') {
   const text = [
     `${emoji} Just planted ${name}at ${coords} ${region}.`,
     logSnippet,
-    `One planet. Eight billion dots. Plant yours →`,
-    shareUrl, // ⭐ UPDATED (was APP_URL before)
+    `Plant yours on Mars 🚀`,
     `#SolMars #Mars`,
-  ].filter(Boolean).join('\n\n')
+  ]
+    .filter(Boolean)
+    .join('\n\n')
 
-  const encoded = encodeURIComponent(text)
+  // ✅ KEY FIX: use url= parameter
+  const tweetUrl = `https://x.com/intent/tweet?url=${encodeURIComponent(
+    shareUrl
+  )}&text=${encodeURIComponent(text)}`
 
-  window.open(
-    `https://x.com/intent/tweet?text=${encoded}`,
-    '_blank',
-    'noopener'
-  )
+  window.open(tweetUrl, '_blank', 'noopener')
 }
 
 /**
- * Build a share URL for a specific dot (for og:image generation).
+ * Build a share URL for a specific dot
  */
 export function buildDotShareUrl(dot) {
-  return `${APP_URL}/dot/${dot.id}` // ⭐ UPDATED
+  return `${APP_URL}/dot/${dot.id}`
 }
