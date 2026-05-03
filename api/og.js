@@ -26,7 +26,7 @@ export default function handler(req) {
         }}
       >
         <img
-          src={`https://${req.headers.get('host')}/textures/mars.jpg`}
+  src="https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg"
           width="300"
           height="300"
           style={{
