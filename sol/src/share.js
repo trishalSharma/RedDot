@@ -1,7 +1,5 @@
 import { formatCoords } from './ai.js'
-
-const APP_URL =
-  import.meta.env.VITE_APP_URL || 'https://reddotmars.vercel.app'
+const APP_URL = 'https://reddotmars.vercel.app'
 
 const TYPE_EMOJI = {
   rocket: '🚀',
@@ -29,13 +27,11 @@ export function shareOnX(dot, missionLog = '') {
     : ''
 
   const text = [
-    `${emoji} Just planted ${name}at ${coords} ${region}.`,
-    logSnippet,
-    `Plant yours on Mars 🚀`,
-    `#SolMars #Mars`,
-  ]
-    .filter(Boolean)
-    .join('\n\n')
+  `${emoji} Just planted ${name}at ${coords} ${region}.`,
+  logSnippet,
+  `One planet. Eight billion dots.`,
+  `#SolMars #Mars`,
+].join('\n\n')
 
   // ✅ KEY FIX: use url= parameter
   const tweetUrl = `https://x.com/intent/tweet?url=${encodeURIComponent(
