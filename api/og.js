@@ -1,54 +1,61 @@
-import { ImageResponse } from '@vercel/og'
+import { createCanvas, loadImage, registerFont } from 'canvas'
+import path from 'path'
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 }
 
-export default function handler(req) {
-  const { searchParams } = new URL(req.url)
-  const id = searchParams.get('id') || '123'
-  const lat = searchParams.get('lat') || '22.00'
-  const lng = searchParams.get('lng') || '77.00'
+// font
+const fontPath = path.join(process.cwd(), 'sol/public/fonts/Inter-Bold.ttf')
+registerFont(fontPath, { family: 'Inter' })
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: '1200px',
-          height: '630px',
-          background: '#000',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          color: 'white',
-          fontSize: 48,
-        }}
-      >
-        <img
-  src="https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg"
-          width="300"
-          height="300"
-          style={{
-            borderRadius: '50%',
-            marginBottom: 40,
-          }}
-        />
+export default async function handler(req, res) {
+  try {
+    const { id = '123' } = req.query
 
-        <div>I planted on Mars 🚀</div>
+    const width = 1200
+    const height = 630
 
-        <div style={{ fontSize: 28, opacity: 0.7 }}>
-          {lat}°, {lng}°
-        </div>
+    const canvas = createCanvas(width, height)
+    const ctx = canvas.getContext('2d')
 
-        <div style={{ fontSize: 24, opacity: 0.5 }}>
-          Dot #{id}
-        </div>
-      </div>
-    ),
-    {
-      width: 1200,
-      height: 630,
-    }
-  )
+    // background
+    ctx.fillStyle = '#000'
+    ctx.fillRect(0, 0, width, height)
+
+    // load LOCAL image (IMPORTANT)
+    const imgPath = path.join(process.cwd(), 'sol/public/textures/mars.jpg')
+    const mars = await loadImage(imgPath)
+
+    // draw mars
+    ctx.beginPath()
+    ctx.arc(width / 2, height / 2, 150, 0, Math.PI * 2)
+    ctx.clip()
+    ctx.drawImage(mars, width / 2 - 150, height / 2 - 150, 300, 300)
+
+    // reset clip
+    ctx.restore()
+
+    // text
+    ctx.fillStyle = 'white'
+    ctx.textAlign = 'center'
+
+    ctx.font = 'bold 60px Inter'
+    ctx.fillText('I planted on Mars 🚀', width / 2, 100)
+
+    ctx.font = 'bold 28px Inter'
+    ctx.fillText(`Dot #${id}`, width / 2, height - 80)
+
+    const buffer = canvas.toBuffer('image/png')
+
+    res.setHeader('Content-Type', 'image/png')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.setHeader('Content-Length', buffer.length)
+
+    res.status(200).end(buffer)
+
+  } catch (err) {
+    console.error(err)
+    res.status(500).send('OG failed')
+  }
 }
