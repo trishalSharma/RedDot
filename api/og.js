@@ -1,5 +1,10 @@
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas, loadImage, registerFont } from 'canvas'
 import path from 'path'
+
+
+const fontPath = path.join(process.cwd(), 'sol/public/fonts/Inter-Bold.ttf')
+
+registerFont(fontPath, { family: 'Inter' })
 
 export default async function handler(req, res) {
   try {
@@ -89,22 +94,22 @@ ctx.fill()
 
     // ✨ TITLE (perfect center)
     ctx.fillStyle = 'white'
-    ctx.font = 'bold 56px Arial'
+  ctx.font = 'bold 56px Inter'
     ctx.textAlign = 'center'
     ctx.fillText('I planted on Mars', width / 2, 100)
 
     // ✨ SUBTITLE
-    ctx.font = '28px Arial'
+   ctx.font = 'bold 28px Inter'
     ctx.fillStyle = '#bbbbbb'
     ctx.fillText(`${lat.toFixed(2)}°, ${lng.toFixed(2)}°`, width / 2, height - 100)
 
     // ✨ DOT LABEL
-    ctx.font = '26px Arial'
+    ctx.font = 'bold 26px Inter'
     ctx.fillStyle = '#888'
     ctx.fillText(`Dot #${id}`, width / 2, height - 60)
 
     // ✨ subtle brand
-    ctx.font = '20px Arial'
+  ctx.font = 'bold 20px Inter'
     ctx.fillStyle = '#444'
     ctx.fillText('solmars.app', width / 2, height - 20)
 
