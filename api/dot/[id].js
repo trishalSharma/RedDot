@@ -1,10 +1,10 @@
 export default function handler(req, res) {
-  const { id } = req.query;
+  const { id } = req.query
 
-  const APP_URL = `https://${req.headers.host}`;
-  const ogImageUrl = `${APP_URL}/api/og?id=${id}`;
+  const APP_URL = `https://${req.headers.host}`
+  const ogImage = `${APP_URL}/api/og?id=${id}`
 
-  res.setHeader("Content-Type", "text/html");
+  res.setHeader('Content-Type', 'text/html')
 
   res.status(200).send(`
     <!DOCTYPE html>
@@ -13,24 +13,22 @@ export default function handler(req, res) {
         <meta charset="utf-8" />
         <title>SolMars 🚀</title>
 
-        <!-- OG -->
         <meta property="og:title" content="I planted on Mars 🚀" />
         <meta property="og:description" content="Join me in terraforming Mars" />
-        <meta property="og:image" content="${ogImageUrl}" />
+        <meta property="og:image" content="${ogImage}" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="${APP_URL}/dot/${id}" />
 
-        <!-- Twitter -->
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="${ogImageUrl}" />
+        <meta name="twitter:image" content="${ogImage}" />
 
-        <!-- IMPORTANT: delay redirect -->
+        <!-- IMPORTANT: delay for bots -->
         <meta http-equiv="refresh" content="2; url=/?dot=${id}" />
       </head>
 
       <body style="background:black;color:white;display:flex;align-items:center;justify-content:center;height:100vh;">
-        <p>Loading Mars...</p>
+        Loading Mars...
       </body>
     </html>
-  `);
+  `)
 }
