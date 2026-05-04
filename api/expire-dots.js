@@ -1,13 +1,14 @@
 // api/expire.js
 import { createClient } from '@supabase/supabase-js'
 
-export const config = { runtime: 'edge' }
+export const config = { runtime: 'nodejs' } // ✅ changed from 'edge' to 'nodejs'
 
-export default async function handler(req) {
+export default async function handler(req, res) {
   // Protect the endpoint — only Vercel Cron can call it
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return new Response('Unauthorized', { status: 401 })
+    res.status(401).end('Unauthorized')
+    return
   }
 
   const supabase = createClient(
@@ -23,8 +24,9 @@ export default async function handler(req) {
     .lt('expires_at', new Date().toISOString())
 
   if (error) {
-    return new Response(JSON.stringify({ error }), { status: 500 })
+    res.status(500).json({ error })
+    return
   }
 
-  return new Response(JSON.stringify({ deleted: count }), { status: 200 })
+  res.status(200).json({ deleted: count })
 }
