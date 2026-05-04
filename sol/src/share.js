@@ -1,4 +1,5 @@
 import { formatCoords } from './ai.js'
+
 const APP_URL = 'https://reddotmars.vercel.app'
 
 const TYPE_EMOJI = {
@@ -10,40 +11,50 @@ const TYPE_EMOJI = {
 /**
  * Open X share dialog with a pre-composed tweet.
  * @param {Object} dot - { lat, lng, type, name, region, id }
- * @param {string} missionLog - the AI-generated mission log text (first sentence)
+ * @param {string} missionLog - AI-generated mission log text
  */
 export function shareOnX(dot, missionLog = '') {
+  if (!dot?.id) {
+    console.error('❌ Missing dot id for sharing')
+    return
+  }
+
   const emoji = TYPE_EMOJI[dot.type] ?? '📍'
   const coords = formatCoords(dot.lat, dot.lng)
   const name = dot.name ? `"${dot.name}" ` : ''
   const region = dot.region ? `near ${dot.region}` : 'on Mars'
 
-  // ✅ IMPORTANT: unique share URL (with cache buster)
+  // ✅ CRITICAL: fresh URL (avoids X cache)
   const shareUrl = `${APP_URL}/dot/${dot.id}?v=${Date.now()}`
 
-  // Extract first sentence
+  // Clean first sentence
   const logSnippet = missionLog
     ? missionLog.split('.')[0].replace(/\n/g, ' ').trim() + '.'
     : ''
 
+  // ✅ CLEAN TEXT (no URL inside)
   const text = [
-  `${emoji} Just planted ${name}at ${coords} ${region}.`,
-  logSnippet,
-  `One planet. Eight billion dots.`,
-  `#SolMars #Mars`,
-].join('\n\n')
+    `${emoji} Just planted ${name}at ${coords} ${region}.`,
+    logSnippet,
+    `One planet. Eight billion dots.`,
+    `#SolMars #Mars`,
+  ]
+    .filter(Boolean)
+    .join('\n\n')
 
-  // ✅ KEY FIX: use url= parameter
-  const tweetUrl = `https://x.com/intent/tweet?url=${encodeURIComponent(
-    shareUrl
-  )}&text=${encodeURIComponent(text)}`
+  // ✅ IMPORTANT: url FIRST (more reliable parsing by X)
+  const tweetUrl =
+    `https://x.com/intent/tweet?url=${encodeURIComponent(shareUrl)}` +
+    `&text=${encodeURIComponent(text)}`
 
-  window.open(tweetUrl, '_blank', 'noopener')
+  // Open share window
+  window.open(tweetUrl, '_blank', 'noopener,noreferrer')
 }
 
 /**
  * Build a share URL for a specific dot
  */
 export function buildDotShareUrl(dot) {
+  if (!dot?.id) return APP_URL
   return `${APP_URL}/dot/${dot.id}`
 }
