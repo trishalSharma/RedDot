@@ -81,7 +81,7 @@ export default async function handler(req, res) {
     ctx.textAlign = 'center'
 
     ctx.font = 'bold 56px Inter'
-    ctx.fillText('I planted on Mars 🚀', width / 2, 100)
+    ctx.fillText('I planted on Mars', width / 2, 100)
 
     ctx.font = '24px Inter'
     ctx.fillStyle = '#aaaaaa'
