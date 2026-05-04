@@ -15,6 +15,11 @@ registerFont(path.join(__dirname, 'fonts/Inter-Bold.ttf'), {
   weight: 'bold',
 })
 
+registerFont(path.join(__dirname, 'fonts/Inter-Regular.ttf'), {
+  family: 'Inter',
+  weight: 'normal',
+})
+
 export default async function handler(req, res) {
   try {
     const { id = '123' } = req.query
