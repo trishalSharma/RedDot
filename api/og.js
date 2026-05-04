@@ -30,74 +30,95 @@ export default async function handler(req, res) {
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
 
-    // 🌌 Background (dark blue)
+    // 🌌 background
     ctx.fillStyle = '#0b1b2b'
     ctx.fillRect(0, 0, width, height)
 
-    // ⭐ stars
+    // stars
     for (let i = 0; i < 40; i++) {
       ctx.fillStyle = 'rgba(255,255,255,0.6)'
       ctx.beginPath()
-      ctx.arc(
-        Math.random() * width,
-        Math.random() * height,
-        Math.random() * 2,
-        0,
-        Math.PI * 2
-      )
+      ctx.arc(Math.random() * width, Math.random() * height, Math.random() * 2, 0, Math.PI * 2)
       ctx.fill()
     }
 
-    // 🌍 Mars (LEFT SIDE BIG)
-    let mars
-    try {
-      mars = await loadImage(path.join(__dirname, 'textures/mars.jpg'))
-    } catch {
-      mars = await loadImage(
-        'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg'
-      )
-    }
+    // 🟠 CARTOON MARS
+    const cx = 260
+    const cy = height / 2
+    const r = 190
 
-    const marsX = 250
-    const marsY = height / 2
-    const marsR = 200
-
-    ctx.save()
+    // main circle
+    ctx.fillStyle = '#e24b1a'
     ctx.beginPath()
-    ctx.arc(marsX, marsY, marsR, 0, Math.PI * 2)
-    ctx.clip()
-    ctx.drawImage(
-      mars,
-      marsX - marsR,
-      marsY - marsR,
-      marsR * 2,
-      marsR * 2
-    )
-    ctx.restore()
+    ctx.arc(cx, cy, r, 0, Math.PI * 2)
+    ctx.fill()
 
-    // 🔴 dot
-    const dotX = marsX + 120
-    const dotY = marsY - 40
+    // darker patches
+    ctx.fillStyle = '#c43c13'
+    ctx.beginPath()
+    ctx.ellipse(cx - 40, cy - 40, 60, 30, 0, 0, Math.PI * 2)
+    ctx.fill()
 
-    const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 25)
+    ctx.beginPath()
+    ctx.ellipse(cx + 40, cy + 20, 50, 25, 0, 0, Math.PI * 2)
+    ctx.fill()
+
+    // cheeks
+    ctx.fillStyle = '#ff7a4d'
+    ctx.beginPath()
+    ctx.arc(cx - 60, cy + 20, 18, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.beginPath()
+    ctx.arc(cx + 60, cy + 20, 18, 0, Math.PI * 2)
+    ctx.fill()
+
+    // eyes
+    ctx.fillStyle = '#fff'
+    ctx.beginPath()
+    ctx.arc(cx - 50, cy - 30, 22, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.beginPath()
+    ctx.arc(cx + 50, cy - 30, 22, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.fillStyle = '#111'
+    ctx.beginPath()
+    ctx.arc(cx - 50, cy - 30, 10, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.beginPath()
+    ctx.arc(cx + 50, cy - 30, 10, 0, Math.PI * 2)
+    ctx.fill()
+
+    // smile
+    ctx.strokeStyle = '#5a1a0d'
+    ctx.lineWidth = 5
+    ctx.beginPath()
+    ctx.arc(cx, cy + 10, 60, 0.2, Math.PI - 0.2)
+    ctx.stroke()
+
+    // 🔴 glowing dot
+    const dotX = cx + 120
+    const dotY = cy - 20
+
+    const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 30)
     glow.addColorStop(0, '#ff5a3c')
     glow.addColorStop(1, 'rgba(255,90,60,0)')
-
     ctx.fillStyle = glow
     ctx.beginPath()
-    ctx.arc(dotX, dotY, 25, 0, Math.PI * 2)
+    ctx.arc(dotX, dotY, 30, 0, Math.PI * 2)
     ctx.fill()
 
     ctx.fillStyle = '#fff'
     ctx.beginPath()
-    ctx.arc(dotX, dotY, 4, 0, Math.PI * 2)
+    ctx.arc(dotX, dotY, 5, 0, Math.PI * 2)
     ctx.fill()
 
-    // 🚀 RIGHT SIDE CONTENT
-
+    // 🧠 RIGHT SIDE UI
     const rightX = 520
 
-    // SOL badge
     ctx.fillStyle = '#2a3b2a'
     ctx.beginPath()
     ctx.roundRect(rightX, 60, 140, 40, 20)
@@ -108,7 +129,6 @@ export default async function handler(req, res) {
     ctx.textAlign = 'center'
     ctx.fillText('SOL 505', rightX + 70, 88)
 
-    // TITLE
     ctx.textAlign = 'left'
 
     ctx.fillStyle = '#ffffff'
@@ -118,7 +138,6 @@ export default async function handler(req, res) {
     ctx.fillStyle = '#ff5a3c'
     ctx.fillText('on Mars!', rightX, 230)
 
-    // coordinates pill
     ctx.fillStyle = '#1e2a38'
     ctx.beginPath()
     ctx.roundRect(rightX, 270, 420, 50, 12)
@@ -128,35 +147,23 @@ export default async function handler(req, res) {
     ctx.font = '22px Inter'
     ctx.fillText(`${lat}°N ${lng}°W · near open terrain`, rightX + 20, 305)
 
-    // divider
-    ctx.strokeStyle = '#334'
-    ctx.beginPath()
-    ctx.moveTo(rightX, 340)
-    ctx.lineTo(rightX + 420, 340)
-    ctx.stroke()
-
-    // tagline
     ctx.fillStyle = '#9aa4af'
-    ctx.font = '22px Inter'
     ctx.fillText('One planet. Eight billion dots.', rightX, 380)
 
-    // hashtags
     ctx.fillStyle = '#ff5a3c'
     ctx.fillText('#SolMars #Mars', rightX, 420)
 
-    // brand
     ctx.fillStyle = '#556'
     ctx.font = '18px Inter'
     ctx.fillText('reddotmars.vercel.app', rightX, 460)
 
-    // ⚡ OUTPUT
     const buffer = canvas.toBuffer('image/png')
 
     res.setHeader('Content-Type', 'image/png')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.setHeader('Content-Length', buffer.length)
 
-    return res.status(200).end(buffer)
+    res.status(200).end(buffer)
   } catch (err) {
     console.error(err)
     res.status(500).send('OG failed')
