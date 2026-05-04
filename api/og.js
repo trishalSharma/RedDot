@@ -9,7 +9,7 @@ export const config = {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// ✅ Points to api/fonts/Inter-Bold.ttf
+// fonts
 registerFont(path.join(__dirname, 'fonts/Inter-Bold.ttf'), {
   family: 'Inter',
   weight: 'bold',
@@ -22,7 +22,7 @@ registerFont(path.join(__dirname, 'fonts/Inter-Regular.ttf'), {
 
 export default async function handler(req, res) {
   try {
-    const { id = '123' } = req.query
+    const { id = '123', lat = '15.53', lng = '99.47' } = req.query
 
     const width = 1200
     const height = 630
@@ -30,64 +30,126 @@ export default async function handler(req, res) {
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
 
-    // ⚡ Background
-    ctx.fillStyle = '#000'
+    // 🌌 Background (dark blue)
+    ctx.fillStyle = '#0b1b2b'
     ctx.fillRect(0, 0, width, height)
 
-    // ⚡ Load Mars image (safe fallback)
+    // ⭐ stars
+    for (let i = 0; i < 40; i++) {
+      ctx.fillStyle = 'rgba(255,255,255,0.6)'
+      ctx.beginPath()
+      ctx.arc(
+        Math.random() * width,
+        Math.random() * height,
+        Math.random() * 2,
+        0,
+        Math.PI * 2
+      )
+      ctx.fill()
+    }
+
+    // 🌍 Mars (LEFT SIDE BIG)
     let mars
     try {
-      // ✅ Points to api/textures/mars.jpg
-      const imgPath = path.join(__dirname, 'textures/mars.jpg')
-      mars = await loadImage(imgPath)
+      mars = await loadImage(path.join(__dirname, 'textures/mars.jpg'))
     } catch {
       mars = await loadImage(
         'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg'
       )
     }
 
-    // ⚡ Draw Mars
-    const cx = width / 2
-    const cy = height / 2
-    const radius = 150
+    const marsX = 250
+    const marsY = height / 2
+    const marsR = 200
 
     ctx.save()
     ctx.beginPath()
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+    ctx.arc(marsX, marsY, marsR, 0, Math.PI * 2)
     ctx.clip()
-    ctx.drawImage(mars, cx - radius, cy - radius, radius * 2, radius * 2)
+    ctx.drawImage(
+      mars,
+      marsX - marsR,
+      marsY - marsR,
+      marsR * 2,
+      marsR * 2
+    )
     ctx.restore()
 
-    // 🔴 Glow dot
-    const dotX = cx + 80
-    const dotY = cy - 20
+    // 🔴 dot
+    const dotX = marsX + 120
+    const dotY = marsY - 40
 
-    const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 20)
+    const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 25)
     glow.addColorStop(0, '#ff5a3c')
     glow.addColorStop(1, 'rgba(255,90,60,0)')
 
     ctx.fillStyle = glow
     ctx.beginPath()
-    ctx.arc(dotX, dotY, 20, 0, Math.PI * 2)
+    ctx.arc(dotX, dotY, 25, 0, Math.PI * 2)
     ctx.fill()
 
     ctx.fillStyle = '#fff'
     ctx.beginPath()
-    ctx.arc(dotX, dotY, 3, 0, Math.PI * 2)
+    ctx.arc(dotX, dotY, 4, 0, Math.PI * 2)
     ctx.fill()
 
-    // ⚡ TEXT
-    ctx.fillStyle = '#ffffff'
+    // 🚀 RIGHT SIDE CONTENT
+
+    const rightX = 520
+
+    // SOL badge
+    ctx.fillStyle = '#2a3b2a'
+    ctx.beginPath()
+    ctx.roundRect(rightX, 60, 140, 40, 20)
+    ctx.fill()
+
+    ctx.fillStyle = '#ffe66d'
+    ctx.font = 'bold 20px Inter'
     ctx.textAlign = 'center'
+    ctx.fillText('SOL 505', rightX + 70, 88)
 
-    ctx.font = 'bold 56px Inter'
-    ctx.fillText('I planted on Mars', width / 2, 100)
+    // TITLE
+    ctx.textAlign = 'left'
 
-    ctx.font = '24px Inter'
-    ctx.fillStyle = '#aaaaaa'
-    ctx.fillText(`Dot #${id}`, width / 2, height - 60)
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 60px Inter'
+    ctx.fillText('Dot planted', rightX, 160)
 
-    // ⚡ Buffer
+    ctx.fillStyle = '#ff5a3c'
+    ctx.fillText('on Mars!', rightX, 230)
+
+    // coordinates pill
+    ctx.fillStyle = '#1e2a38'
+    ctx.beginPath()
+    ctx.roundRect(rightX, 270, 420, 50, 12)
+    ctx.fill()
+
+    ctx.fillStyle = '#d0d7de'
+    ctx.font = '22px Inter'
+    ctx.fillText(`${lat}°N ${lng}°W · near open terrain`, rightX + 20, 305)
+
+    // divider
+    ctx.strokeStyle = '#334'
+    ctx.beginPath()
+    ctx.moveTo(rightX, 340)
+    ctx.lineTo(rightX + 420, 340)
+    ctx.stroke()
+
+    // tagline
+    ctx.fillStyle = '#9aa4af'
+    ctx.font = '22px Inter'
+    ctx.fillText('One planet. Eight billion dots.', rightX, 380)
+
+    // hashtags
+    ctx.fillStyle = '#ff5a3c'
+    ctx.fillText('#SolMars #Mars', rightX, 420)
+
+    // brand
+    ctx.fillStyle = '#556'
+    ctx.font = '18px Inter'
+    ctx.fillText('reddotmars.vercel.app', rightX, 460)
+
+    // ⚡ OUTPUT
     const buffer = canvas.toBuffer('image/png')
 
     res.setHeader('Content-Type', 'image/png')
@@ -96,9 +158,7 @@ export default async function handler(req, res) {
 
     return res.status(200).end(buffer)
   } catch (err) {
-    console.error('OG ERROR:', err)
-
-    res.setHeader('Content-Type', 'text/plain')
-    return res.status(200).end('OG fallback')
+    console.error(err)
+    res.status(500).send('OG failed')
   }
 }
