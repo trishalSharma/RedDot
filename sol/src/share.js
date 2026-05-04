@@ -25,7 +25,7 @@ export function shareOnX(dot, missionLog = '') {
   const region = dot.region ? `near ${dot.region}` : 'on Mars'
 
   // ✅ CRITICAL: fresh URL (avoids X cache)
-  const shareUrl = `${APP_URL}/dot/${dot.id}?v=${Date.now()}`
+  const shareUrl = `${APP_URL}/dot/${dot.id}?v=${dot.id}`
 
   // Clean first sentence
   const logSnippet = missionLog
