@@ -1,13 +1,9 @@
-import { createCanvas, loadImage, registerFont } from 'canvas'
+import { createCanvas, loadImage } from 'canvas'
 import path from 'path'
 
 export const config = {
   runtime: 'nodejs',
 }
-
-// font
-const fontPath = path.join(process.cwd(), 'sol/public/fonts/Inter-Bold.ttf')
-registerFont(fontPath, { family: 'Inter' })
 
 export default async function handler(req, res) {
   try {
@@ -19,43 +15,85 @@ export default async function handler(req, res) {
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
 
-    // background
+    // ⚡ FAST background
     ctx.fillStyle = '#000'
     ctx.fillRect(0, 0, width, height)
 
-    // load LOCAL image (IMPORTANT)
-    const imgPath = path.join(process.cwd(), 'sol/public/textures/mars.jpg')
-    const mars = await loadImage(imgPath)
+    // ⚡ Load Mars image (with fallback)
+    let mars
+    try {
+      const imgPath = path.join(
+        process.cwd(),
+        'sol/public/textures/mars.jpg'
+      )
+      mars = await loadImage(imgPath)
+    } catch (e) {
+      // fallback (never fail OG)
+      mars = await loadImage(
+        'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg'
+      )
+    }
 
-    // draw mars
+    // ⚡ Draw Mars safely
+    const cx = width / 2
+    const cy = height / 2
+    const radius = 150
+
+    ctx.save()
     ctx.beginPath()
-    ctx.arc(width / 2, height / 2, 150, 0, Math.PI * 2)
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+    ctx.closePath()
     ctx.clip()
-    ctx.drawImage(mars, width / 2 - 150, height / 2 - 150, 300, 300)
 
-    // reset clip
+    ctx.drawImage(mars, cx - radius, cy - radius, radius * 2, radius * 2)
     ctx.restore()
 
-    // text
-    ctx.fillStyle = 'white'
+    // ⚡ Glow dot (lightweight)
+    const dotX = cx + 80
+    const dotY = cy - 20
+
+    const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 20)
+    glow.addColorStop(0, '#ff5a3c')
+    glow.addColorStop(1, 'rgba(255,90,60,0)')
+
+    ctx.fillStyle = glow
+    ctx.beginPath()
+    ctx.arc(dotX, dotY, 20, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.fillStyle = '#fff'
+    ctx.beginPath()
+    ctx.arc(dotX, dotY, 3, 0, Math.PI * 2)
+    ctx.fill()
+
+    // ⚡ Text (NO custom font → fast + reliable)
+    ctx.fillStyle = '#ffffff'
     ctx.textAlign = 'center'
 
-    ctx.font = 'bold 60px Inter'
+    ctx.font = 'bold 56px sans-serif'
     ctx.fillText('I planted on Mars 🚀', width / 2, 100)
 
-    ctx.font = 'bold 28px Inter'
-    ctx.fillText(`Dot #${id}`, width / 2, height - 80)
+    ctx.font = '24px sans-serif'
+    ctx.fillStyle = '#aaaaaa'
+    ctx.fillText(`Dot #${id}`, width / 2, height - 60)
 
+    // ⚡ Convert to buffer
     const buffer = canvas.toBuffer('image/png')
 
+    // ⚡ Headers (VERY IMPORTANT for bots)
     res.setHeader('Content-Type', 'image/png')
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.setHeader(
+      'Cache-Control',
+      'public, max-age=31536000, immutable'
+    )
     res.setHeader('Content-Length', buffer.length)
 
-    res.status(200).end(buffer)
-
+    return res.status(200).end(buffer)
   } catch (err) {
-    console.error(err)
-    res.status(500).send('OG failed')
+    console.error('OG ERROR:', err)
+
+    // ⚡ Always return something (never fail)
+    res.setHeader('Content-Type', 'text/plain')
+    return res.status(200).end('OG fallback')
   }
 }
