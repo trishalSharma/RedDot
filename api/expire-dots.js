@@ -1,13 +1,4 @@
-// api/expire-dots.js
-export const config = {
-  runtime: 'nodejs',
-}
-
-import { createClient } from '@supabase/supabase-js'
-
-// your existing code...
-
-
+// api/expire.js
 import { createClient } from '@supabase/supabase-js'
 
 export const config = { runtime: 'edge' }

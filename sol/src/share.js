@@ -24,8 +24,8 @@ export function shareOnX(dot, missionLog = '') {
   const name = dot.name ? `"${dot.name}" ` : ''
   const region = dot.region ? `near ${dot.region}` : 'on Mars'
 
-  // ✅ CRITICAL: fresh URL (avoids X cache)
-  const shareUrl = `${APP_URL}/dot/${dot.id}?v=${dot.id}`
+  // ✅ Clean URL — no cache busting params
+  const shareUrl = `${APP_URL}/dot/${dot.id}`
 
   // Clean first sentence
   const logSnippet = missionLog
@@ -47,7 +47,6 @@ export function shareOnX(dot, missionLog = '') {
     `https://x.com/intent/tweet?url=${encodeURIComponent(shareUrl)}` +
     `&text=${encodeURIComponent(text)}`
 
-  // Open share window
   window.open(tweetUrl, '_blank', 'noopener,noreferrer')
 }
 

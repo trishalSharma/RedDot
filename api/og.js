@@ -1,11 +1,16 @@
 import { createCanvas, loadImage, registerFont } from 'canvas'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 export const config = {
   runtime: 'nodejs',
 }
 
-registerFont(path.join(process.cwd(), 'public/fonts/Inter-Bold.ttf'), {
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// ✅ Points to api/fonts/Inter-Bold.ttf
+registerFont(path.join(__dirname, 'fonts/Inter-Bold.ttf'), {
   family: 'Inter',
   weight: 'bold',
 })
@@ -27,10 +32,8 @@ export default async function handler(req, res) {
     // ⚡ Load Mars image (safe fallback)
     let mars
     try {
-      const imgPath = path.join(
-        process.cwd(),
-        'sol/public/textures/mars.jpg'
-      )
+      // ✅ Points to api/textures/mars.jpg
+      const imgPath = path.join(__dirname, 'textures/mars.jpg')
       mars = await loadImage(imgPath)
     } catch {
       mars = await loadImage(
@@ -68,7 +71,7 @@ export default async function handler(req, res) {
     ctx.arc(dotX, dotY, 3, 0, Math.PI * 2)
     ctx.fill()
 
-    // ⚡ TEXT (system font only)
+    // ⚡ TEXT
     ctx.fillStyle = '#ffffff'
     ctx.textAlign = 'center'
 
