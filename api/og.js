@@ -70,10 +70,10 @@ export default async function handler(req, res) {
     ctx.fillStyle = '#ffffff'
     ctx.textAlign = 'center'
 
-    ctx.font = 'bold 56px sans-serif'
+    ctx.font = 'bold 56px Inter-Bold'
     ctx.fillText('I planted on Mars 🚀', width / 2, 100)
 
-    ctx.font = '24px sans-serif'
+    ctx.font = '24px Inter-Bold'
     ctx.fillStyle = '#aaaaaa'
     ctx.fillText(`Dot #${id}`, width / 2, height - 60)
 

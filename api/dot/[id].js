@@ -2,7 +2,7 @@ export default function handler(req, res) {
   const { id } = req.query
 
   const APP_URL = `https://${req.headers.host}`
-  const ogImage = `${APP_URL}/api/og?id=${id}`
+  const ogImage = `${APP_URL}/api/og?id=${id}&v=${Date.now()}`
 
   res.setHeader('Content-Type', 'text/html')
 
