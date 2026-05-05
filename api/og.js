@@ -1,8 +1,24 @@
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas, loadImage, registerFont } from 'canvas'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 export const config = {
   runtime: 'nodejs',
 }
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// ✅ Inter fonts only
+registerFont(path.join(__dirname, 'fonts/Inter-Bold.ttf'), {
+  family: 'Inter',
+  weight: 'bold',
+})
+
+registerFont(path.join(__dirname, 'fonts/Inter-Regular.ttf'), {
+  family: 'Inter',
+  weight: 'normal',
+})
 
 export default async function handler(req, res) {
   try {
@@ -14,14 +30,11 @@ export default async function handler(req, res) {
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
 
-    // 🌌 CINEMATIC BACKGROUND
-    const bg = ctx.createLinearGradient(0, 0, 0, height)
-    bg.addColorStop(0, '#020202')
-    bg.addColorStop(1, '#0a0a0a')
-    ctx.fillStyle = bg
+    // 🎨 Clean background (not pure black)
+    ctx.fillStyle = '#050505'
     ctx.fillRect(0, 0, width, height)
 
-    // soft vignette
+    // subtle vignette
     const vignette = ctx.createRadialGradient(
       width / 2,
       height / 2,
@@ -35,25 +48,24 @@ export default async function handler(req, res) {
     ctx.fillStyle = vignette
     ctx.fillRect(0, 0, width, height)
 
-    // 🌍 LOAD MARS (reliable)
+    // 🌍 Mars
     const mars = await loadImage(
       'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg'
     )
 
     const cx = width / 2
     const cy = height / 2 - 10
-    const r = 210
+    const r = 200
 
-    // 🌫️ ATMOSPHERE GLOW (key detail)
-    const atmosphere = ctx.createRadialGradient(cx, cy, r, cx, cy, r + 40)
-    atmosphere.addColorStop(0, 'rgba(255,120,60,0.15)')
+    // atmosphere glow
+    const atmosphere = ctx.createRadialGradient(cx, cy, r, cx, cy, r + 35)
+    atmosphere.addColorStop(0, 'rgba(255,120,60,0.12)')
     atmosphere.addColorStop(1, 'rgba(255,120,60,0)')
     ctx.fillStyle = atmosphere
     ctx.beginPath()
     ctx.arc(cx, cy, r + 30, 0, Math.PI * 2)
     ctx.fill()
 
-    // 🌍 DRAW MARS
     ctx.save()
     ctx.beginPath()
     ctx.arc(cx, cy, r, 0, Math.PI * 2)
@@ -61,48 +73,34 @@ export default async function handler(req, res) {
     ctx.drawImage(mars, cx - r, cy - r, r * 2, r * 2)
     ctx.restore()
 
-    // 🌑 SHADOW (depth)
-    const shadow = ctx.createRadialGradient(
-      cx + 90,
-      cy + 30,
-      50,
-      cx,
-      cy,
-      r
-    )
+    // shadow (depth)
+    const shadow = ctx.createRadialGradient(cx + 80, cy + 30, 50, cx, cy, r)
     shadow.addColorStop(0, 'rgba(0,0,0,0)')
-    shadow.addColorStop(1, 'rgba(0,0,0,0.65)')
+    shadow.addColorStop(1, 'rgba(0,0,0,0.6)')
     ctx.fillStyle = shadow
     ctx.beginPath()
     ctx.arc(cx, cy, r, 0, Math.PI * 2)
     ctx.fill()
 
-    // ✨ HIGHLIGHT
-    const highlight = ctx.createRadialGradient(
-      cx - 140,
-      cy - 140,
-      10,
-      cx,
-      cy,
-      r
-    )
-    highlight.addColorStop(0, 'rgba(255,255,255,0.12)')
+    // highlight
+    const highlight = ctx.createRadialGradient(cx - 120, cy - 120, 10, cx, cy, r)
+    highlight.addColorStop(0, 'rgba(255,255,255,0.08)')
     highlight.addColorStop(1, 'rgba(255,255,255,0)')
     ctx.fillStyle = highlight
     ctx.beginPath()
     ctx.arc(cx, cy, r, 0, Math.PI * 2)
     ctx.fill()
 
-    // 🔴 DOT (subtle but sharp)
-    const dotX = cx + 120
+    // 🔴 Dot
+    const dotX = cx + 110
     const dotY = cy - 20
 
-    const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 28)
+    const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 26)
     glow.addColorStop(0, '#ff5a3c')
     glow.addColorStop(1, 'rgba(255,90,60,0)')
     ctx.fillStyle = glow
     ctx.beginPath()
-    ctx.arc(dotX, dotY, 28, 0, Math.PI * 2)
+    ctx.arc(dotX, dotY, 26, 0, Math.PI * 2)
     ctx.fill()
 
     ctx.fillStyle = '#ffffff'
@@ -110,33 +108,29 @@ export default async function handler(req, res) {
     ctx.arc(dotX, dotY, 4, 0, Math.PI * 2)
     ctx.fill()
 
-    // 🧠 TYPOGRAPHY (this is where most apps fail)
+    // 🧠 TYPOGRAPHY (clean hierarchy)
 
     ctx.textAlign = 'center'
 
     // title
     ctx.fillStyle = '#ffffff'
-    ctx.font = '600 58px -apple-system, BlinkMacSystemFont, sans-serif'
+    ctx.font = 'bold 56px Inter'
     ctx.fillText('I planted on Mars', width / 2, 90)
 
-    // subtitle (lighter, spaced)
-    ctx.font = '400 26px -apple-system, BlinkMacSystemFont, sans-serif'
+    // coordinates
+    ctx.font = 'normal 24px Inter'
     ctx.fillStyle = '#9aa0a6'
-    ctx.fillText(
-      `${lat}°N · ${lng}°W`,
-      width / 2,
-      height - 110
-    )
+    ctx.fillText(`${lat}°N · ${lng}°W`, width / 2, height - 110)
 
     // dot id
-    ctx.font = '400 22px -apple-system, BlinkMacSystemFont, sans-serif'
+    ctx.font = 'normal 20px Inter'
     ctx.fillStyle = '#666'
     ctx.fillText(`Dot #${id}`, width / 2, height - 70)
 
     // brand (very subtle)
-    ctx.font = '400 18px -apple-system, BlinkMacSystemFont, sans-serif'
+    ctx.font = 'normal 18px Inter'
     ctx.fillStyle = '#333'
-    ctx.fillText('reddotmars.vercel.app', width / 2, height - 30)
+    ctx.fillText('reddotmars', width / 2, height - 30)
 
     const buffer = canvas.toBuffer('image/png')
 
