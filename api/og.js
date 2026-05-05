@@ -6,11 +6,10 @@ export const config = {
   runtime: 'nodejs',
 }
 
-// ✅ Fix for __dirname in Vercel
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// ✅ Correct font paths (based on your structure)
+// fonts
 registerFont(path.join(__dirname, 'fonts/Inter-Bold.ttf'), {
   family: 'Inter',
   weight: 'bold',
@@ -31,42 +30,83 @@ export default async function handler(req, res) {
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
 
-    // 🎨 Background
-    ctx.fillStyle = '#050505'
+    // 🌌 DEEP SPACE BACKGROUND
+    const bg = ctx.createLinearGradient(0, 0, 0, height)
+    bg.addColorStop(0, '#02040a')
+    bg.addColorStop(1, '#05070f')
+    ctx.fillStyle = bg
     ctx.fillRect(0, 0, width, height)
 
-    const vignette = ctx.createRadialGradient(
-      width / 2,
-      height / 2,
-      200,
-      width / 2,
-      height / 2,
-      800
-    )
-    vignette.addColorStop(0, 'rgba(0,0,0,0)')
-    vignette.addColorStop(1, 'rgba(0,0,0,0.85)')
-    ctx.fillStyle = vignette
+    // 🌫️ subtle nebula glow
+    const nebula = ctx.createRadialGradient(300, 200, 50, 300, 200, 500)
+    nebula.addColorStop(0, 'rgba(255,80,40,0.06)')
+    nebula.addColorStop(1, 'rgba(0,0,0,0)')
+    ctx.fillStyle = nebula
     ctx.fillRect(0, 0, width, height)
 
-    // 🌍 Mars (reliable external)
+    // ✨ STARS (multi-layer depth)
+
+    // far stars (tiny, many)
+    for (let i = 0; i < 120; i++) {
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'
+      ctx.beginPath()
+      ctx.arc(
+        Math.random() * width,
+        Math.random() * height,
+        Math.random() * 1.2,
+        0,
+        Math.PI * 2
+      )
+      ctx.fill()
+    }
+
+    // mid stars
+    for (let i = 0; i < 60; i++) {
+      ctx.fillStyle = 'rgba(255,255,255,0.6)'
+      ctx.beginPath()
+      ctx.arc(
+        Math.random() * width,
+        Math.random() * height,
+        Math.random() * 1.8,
+        0,
+        Math.PI * 2
+      )
+      ctx.fill()
+    }
+
+    // near stars (bright glow)
+    for (let i = 0; i < 25; i++) {
+      const x = Math.random() * width
+      const y = Math.random() * height
+
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, 6)
+      glow.addColorStop(0, 'rgba(255,255,255,0.9)')
+      glow.addColorStop(1, 'rgba(255,255,255,0)')
+
+      ctx.fillStyle = glow
+      ctx.beginPath()
+      ctx.arc(x, y, 6, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    // 🌍 Mars
     const mars = await loadImage(
       'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg'
     )
 
-    const cx = width / 2
+    const cx = width * 0.58
     const cy = height / 2 - 10
-    const r = 200
+    const r = 210
 
     // atmosphere glow
-    const atmosphere = ctx.createRadialGradient(cx, cy, r, cx, cy, r + 35)
-    atmosphere.addColorStop(0, 'rgba(255,120,60,0.12)')
+    const atmosphere = ctx.createRadialGradient(cx, cy, r, cx, cy, r + 60)
+    atmosphere.addColorStop(0, 'rgba(255,120,60,0.2)')
     atmosphere.addColorStop(1, 'rgba(255,120,60,0)')
     ctx.fillStyle = atmosphere
     ctx.beginPath()
-    ctx.arc(cx, cy, r + 30, 0, Math.PI * 2)
+    ctx.arc(cx, cy, r + 50, 0, Math.PI * 2)
     ctx.fill()
 
-    // draw Mars
     ctx.save()
     ctx.beginPath()
     ctx.arc(cx, cy, r, 0, Math.PI * 2)
@@ -75,58 +115,60 @@ export default async function handler(req, res) {
     ctx.restore()
 
     // shadow
-    const shadow = ctx.createRadialGradient(cx + 80, cy + 30, 50, cx, cy, r)
+    const shadow = ctx.createRadialGradient(cx + 100, cy + 40, 50, cx, cy, r)
     shadow.addColorStop(0, 'rgba(0,0,0,0)')
-    shadow.addColorStop(1, 'rgba(0,0,0,0.6)')
+    shadow.addColorStop(1, 'rgba(0,0,0,0.8)')
     ctx.fillStyle = shadow
     ctx.beginPath()
     ctx.arc(cx, cy, r, 0, Math.PI * 2)
     ctx.fill()
 
-    // highlight
-    const highlight = ctx.createRadialGradient(cx - 120, cy - 120, 10, cx, cy, r)
-    highlight.addColorStop(0, 'rgba(255,255,255,0.08)')
-    highlight.addColorStop(1, 'rgba(255,255,255,0)')
-    ctx.fillStyle = highlight
+    // rim light
+    ctx.strokeStyle = 'rgba(255,120,60,0.3)'
+    ctx.lineWidth = 3
     ctx.beginPath()
-    ctx.arc(cx, cy, r, 0, Math.PI * 2)
-    ctx.fill()
+    ctx.arc(cx, cy, r + 1, -0.5, 2.8)
+    ctx.stroke()
 
     // 🔴 Dot
-    const dotX = cx + 110
-    const dotY = cy - 20
+    const dotX = cx + 120
+    const dotY = cy - 30
 
-    const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 26)
+    const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 40)
     glow.addColorStop(0, '#ff5a3c')
     glow.addColorStop(1, 'rgba(255,90,60,0)')
     ctx.fillStyle = glow
     ctx.beginPath()
-    ctx.arc(dotX, dotY, 26, 0, Math.PI * 2)
+    ctx.arc(dotX, dotY, 40, 0, Math.PI * 2)
     ctx.fill()
 
     ctx.fillStyle = '#ffffff'
     ctx.beginPath()
-    ctx.arc(dotX, dotY, 4, 0, Math.PI * 2)
+    ctx.arc(dotX, dotY, 5, 0, Math.PI * 2)
     ctx.fill()
 
-    // 🧠 Typography (Inter only)
-    ctx.textAlign = 'center'
+    // 🧠 TEXT
+    ctx.textAlign = 'left'
 
     ctx.fillStyle = '#ffffff'
-    ctx.font = 'bold 56px Inter'
-    ctx.fillText('I planted on Mars', width / 2, 90)
+    ctx.font = 'bold 64px Inter'
+    ctx.fillText('I planted', 80, 200)
+    ctx.fillText('on Mars.', 80, 270)
 
-    ctx.font = 'normal 24px Inter'
+    ctx.fillStyle = '#ff5a3c'
+    ctx.fillRect(80, 300, 60, 4)
+
+    ctx.font = 'normal 26px Inter'
     ctx.fillStyle = '#9aa0a6'
-    ctx.fillText(`${lat}°N · ${lng}°W`, width / 2, height - 110)
+    ctx.fillText(`${lat}°N · ${lng}°W`, 80, 350)
 
     ctx.font = 'normal 20px Inter'
     ctx.fillStyle = '#666'
-    ctx.fillText(`Dot #${id}`, width / 2, height - 70)
+    ctx.fillText(`Dot #${id}`, 80, 390)
 
     ctx.font = 'normal 18px Inter'
     ctx.fillStyle = '#333'
-    ctx.fillText('reddotmars', width / 2, height - 30)
+    ctx.fillText('reddotmars', 80, height - 40)
 
     const buffer = canvas.toBuffer('image/png')
 
