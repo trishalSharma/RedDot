@@ -6,10 +6,11 @@ export const config = {
   runtime: 'nodejs',
 }
 
+// ✅ Fix for __dirname in Vercel
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// ✅ Inter fonts only
+// ✅ Correct font paths (based on your structure)
 registerFont(path.join(__dirname, 'fonts/Inter-Bold.ttf'), {
   family: 'Inter',
   weight: 'bold',
@@ -30,11 +31,10 @@ export default async function handler(req, res) {
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
 
-    // 🎨 Clean background (not pure black)
+    // 🎨 Background
     ctx.fillStyle = '#050505'
     ctx.fillRect(0, 0, width, height)
 
-    // subtle vignette
     const vignette = ctx.createRadialGradient(
       width / 2,
       height / 2,
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
     ctx.fillStyle = vignette
     ctx.fillRect(0, 0, width, height)
 
-    // 🌍 Mars
+    // 🌍 Mars (reliable external)
     const mars = await loadImage(
       'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg'
     )
@@ -66,6 +66,7 @@ export default async function handler(req, res) {
     ctx.arc(cx, cy, r + 30, 0, Math.PI * 2)
     ctx.fill()
 
+    // draw Mars
     ctx.save()
     ctx.beginPath()
     ctx.arc(cx, cy, r, 0, Math.PI * 2)
@@ -73,7 +74,7 @@ export default async function handler(req, res) {
     ctx.drawImage(mars, cx - r, cy - r, r * 2, r * 2)
     ctx.restore()
 
-    // shadow (depth)
+    // shadow
     const shadow = ctx.createRadialGradient(cx + 80, cy + 30, 50, cx, cy, r)
     shadow.addColorStop(0, 'rgba(0,0,0,0)')
     shadow.addColorStop(1, 'rgba(0,0,0,0.6)')
@@ -108,26 +109,21 @@ export default async function handler(req, res) {
     ctx.arc(dotX, dotY, 4, 0, Math.PI * 2)
     ctx.fill()
 
-    // 🧠 TYPOGRAPHY (clean hierarchy)
-
+    // 🧠 Typography (Inter only)
     ctx.textAlign = 'center'
 
-    // title
     ctx.fillStyle = '#ffffff'
     ctx.font = 'bold 56px Inter'
     ctx.fillText('I planted on Mars', width / 2, 90)
 
-    // coordinates
     ctx.font = 'normal 24px Inter'
     ctx.fillStyle = '#9aa0a6'
     ctx.fillText(`${lat}°N · ${lng}°W`, width / 2, height - 110)
 
-    // dot id
     ctx.font = 'normal 20px Inter'
     ctx.fillStyle = '#666'
     ctx.fillText(`Dot #${id}`, width / 2, height - 70)
 
-    // brand (very subtle)
     ctx.font = 'normal 18px Inter'
     ctx.fillStyle = '#333'
     ctx.fillText('reddotmars', width / 2, height - 30)
