@@ -30,75 +30,63 @@ export default async function handler(req, res) {
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
 
-    // 🌌 DEEP SPACE BACKGROUND
+    // 🌌 CINEMATIC BACKGROUND
     const bg = ctx.createLinearGradient(0, 0, 0, height)
-    bg.addColorStop(0, '#02040a')
-    bg.addColorStop(1, '#05070f')
+    bg.addColorStop(0, '#010203')
+    bg.addColorStop(1, '#06080f')
     ctx.fillStyle = bg
     ctx.fillRect(0, 0, width, height)
 
-    // 🌫️ subtle nebula glow
-    const nebula = ctx.createRadialGradient(300, 200, 50, 300, 200, 500)
-    nebula.addColorStop(0, 'rgba(255,80,40,0.06)')
-    nebula.addColorStop(1, 'rgba(0,0,0,0)')
-    ctx.fillStyle = nebula
+    // light falloff
+    const falloff = ctx.createRadialGradient(
+      width * 0.7,
+      height * 0.4,
+      100,
+      width * 0.7,
+      height * 0.4,
+      700
+    )
+    falloff.addColorStop(0, 'rgba(255,120,60,0.08)')
+    falloff.addColorStop(1, 'rgba(0,0,0,0)')
+    ctx.fillStyle = falloff
     ctx.fillRect(0, 0, width, height)
 
-    // ✨ STARS (multi-layer depth)
+    // ✨ STARS (cinematic drift feel)
+    for (let i = 0; i < 140; i++) {
+      const x = Math.random() * width
+      const y = Math.random() * height
 
-    // far stars (tiny, many)
-    for (let i = 0; i < 120; i++) {
-      ctx.fillStyle = 'rgba(255,255,255,0.3)'
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'
       ctx.beginPath()
-      ctx.arc(
-        Math.random() * width,
-        Math.random() * height,
-        Math.random() * 1.2,
-        0,
-        Math.PI * 2
-      )
+      ctx.ellipse(x, y, 1.2, 0.6, 0.2, 0, Math.PI * 2) // stretched = motion feel
       ctx.fill()
     }
 
-    // mid stars
-    for (let i = 0; i < 60; i++) {
-      ctx.fillStyle = 'rgba(255,255,255,0.6)'
-      ctx.beginPath()
-      ctx.arc(
-        Math.random() * width,
-        Math.random() * height,
-        Math.random() * 1.8,
-        0,
-        Math.PI * 2
-      )
-      ctx.fill()
-    }
-
-    // near stars (bright glow)
+    // bright stars
     for (let i = 0; i < 25; i++) {
       const x = Math.random() * width
       const y = Math.random() * height
 
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, 6)
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, 5)
       glow.addColorStop(0, 'rgba(255,255,255,0.9)')
       glow.addColorStop(1, 'rgba(255,255,255,0)')
 
       ctx.fillStyle = glow
       ctx.beginPath()
-      ctx.arc(x, y, 6, 0, Math.PI * 2)
+      ctx.arc(x, y, 5, 0, Math.PI * 2)
       ctx.fill()
     }
 
-    // 🌍 Mars
+    // 🌍 Mars (shifted right)
     const mars = await loadImage(
       'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg'
     )
 
-    const cx = width * 0.58
-    const cy = height / 2 - 10
+    const cx = width * 0.65
+    const cy = height / 2
     const r = 210
 
-    // atmosphere glow
+    // atmosphere
     const atmosphere = ctx.createRadialGradient(cx, cy, r, cx, cy, r + 60)
     atmosphere.addColorStop(0, 'rgba(255,120,60,0.2)')
     atmosphere.addColorStop(1, 'rgba(255,120,60,0)')
@@ -117,14 +105,14 @@ export default async function handler(req, res) {
     // shadow
     const shadow = ctx.createRadialGradient(cx + 100, cy + 40, 50, cx, cy, r)
     shadow.addColorStop(0, 'rgba(0,0,0,0)')
-    shadow.addColorStop(1, 'rgba(0,0,0,0.8)')
+    shadow.addColorStop(1, 'rgba(0,0,0,0.85)')
     ctx.fillStyle = shadow
     ctx.beginPath()
     ctx.arc(cx, cy, r, 0, Math.PI * 2)
     ctx.fill()
 
     // rim light
-    ctx.strokeStyle = 'rgba(255,120,60,0.3)'
+    ctx.strokeStyle = 'rgba(255,120,60,0.35)'
     ctx.lineWidth = 3
     ctx.beginPath()
     ctx.arc(cx, cy, r + 1, -0.5, 2.8)
@@ -132,7 +120,7 @@ export default async function handler(req, res) {
 
     // 🔴 Dot
     const dotX = cx + 120
-    const dotY = cy - 30
+    const dotY = cy - 40
 
     const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 40)
     glow.addColorStop(0, '#ff5a3c')
@@ -142,12 +130,12 @@ export default async function handler(req, res) {
     ctx.arc(dotX, dotY, 40, 0, Math.PI * 2)
     ctx.fill()
 
-    ctx.fillStyle = '#ffffff'
+    ctx.fillStyle = '#fff'
     ctx.beginPath()
     ctx.arc(dotX, dotY, 5, 0, Math.PI * 2)
     ctx.fill()
 
-    // 🧠 TEXT
+    // 🧠 TEXT (left)
     ctx.textAlign = 'left'
 
     ctx.fillStyle = '#ffffff'
@@ -162,10 +150,16 @@ export default async function handler(req, res) {
     ctx.fillStyle = '#9aa0a6'
     ctx.fillText(`${lat}°N · ${lng}°W`, 80, 350)
 
-    ctx.font = 'normal 20px Inter'
-    ctx.fillStyle = '#666'
-    ctx.fillText(`Dot #${id}`, 80, 390)
+    // 🔥 FIXED DOT ID (top-right, safe)
+    const safeId = id.length > 12 ? id.slice(0, 12) + '…' : id
 
+    ctx.textAlign = 'right'
+    ctx.font = 'normal 18px Inter'
+    ctx.fillStyle = '#666'
+    ctx.fillText(`Dot #${safeId}`, width - 60, 60)
+
+    // brand
+    ctx.textAlign = 'left'
     ctx.font = 'normal 18px Inter'
     ctx.fillStyle = '#333'
     ctx.fillText('reddotmars', 80, height - 40)
