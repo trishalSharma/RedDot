@@ -230,15 +230,6 @@ export default async function handler(req, res) {
     ctx.ellipse(cx + 110, cy + 20, 30, 18, 0, 0, Math.PI * 2)
     ctx.fill()
 
-    // Smile
-    ctx.strokeStyle = '#7a2000'
-    ctx.lineWidth = 7
-    ctx.lineCap = 'round'
-    ctx.beginPath()
-    ctx.moveTo(cx - 55, cy + 50)
-    ctx.quadraticCurveTo(cx, cy + 90, cx + 55, cy + 50)
-    ctx.stroke()
-
     // ===== HANDS =====
     const drawHand = (hx, hy) => {
       ctx.fillStyle = '#d94f1e'
