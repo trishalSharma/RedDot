@@ -2,7 +2,15 @@ export default function handler(req, res) {
   const { id } = req.query
 
   const APP_URL = `https://${req.headers.host}`
-  const ogImage = `${APP_URL}/api/og?id=${id}`
+  const params = new URLSearchParams({
+  id,
+  name: req.query.name || 'Anonymous',
+  lat: req.query.lat || '0',
+  lng: req.query.lng || '0',
+  v: Date.now(),
+})
+
+const ogImageUrl = `${APP_URL}/api/og?${params.toString()}`
 
   res.setHeader('Content-Type', 'text/html')
 

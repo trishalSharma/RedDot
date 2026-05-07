@@ -25,7 +25,15 @@ export function shareOnX(dot, missionLog = '') {
   const region = dot.region ? `near ${dot.region}` : 'on Mars'
 
   // ✅ Clean URL — no cache busting params
-  const shareUrl = `${APP_URL}/dot/${dot.id}`
+const params = new URLSearchParams({
+  id: dot.id,
+  name: dot.name || 'Anonymous',
+  lat: dot.lat,
+  lng: dot.lng,
+  v: Date.now(),
+})
+
+const shareUrl = `${APP_URL}/dot/${dot.id}?${params.toString()}`
 
   // Clean first sentence
   const logSnippet = missionLog

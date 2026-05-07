@@ -22,7 +22,13 @@ registerFont(path.join(__dirname, 'fonts/Inter-Regular.ttf'), {
 
 export default async function handler(req, res) {
   try {
-    const { id = '123', lat = '15.53', lng = '99.47' } = req.query
+    const {
+  id = '123',
+  lat = '15.53',
+  lng = '99.47',
+  name = 'Anonymous',
+} = req.query
+const safeName = String(name).slice(0, 18)
 
     const width = 1200
     const height = 630
@@ -137,10 +143,15 @@ export default async function handler(req, res) {
 
     // 🧠 TEXT (left)
     ctx.textAlign = 'left'
+    // username
+ctx.textAlign = 'left'
+ctx.fillStyle = '#888'
+ctx.font = 'normal 22px Inter'
+ctx.fillText(`@${name}`, 80, 130)
 
     ctx.fillStyle = '#ffffff'
     ctx.font = 'bold 64px Inter'
-    ctx.fillText('I planted', 80, 200)
+    ctx.fillText(`${name} planted`, 80, 200)
     ctx.fillText('on Mars.', 80, 270)
 
     ctx.fillStyle = '#ff5a3c'
