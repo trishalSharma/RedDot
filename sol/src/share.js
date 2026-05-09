@@ -9,9 +9,9 @@ const TYPE_EMOJI = {
 }
 
 /**
- * Open X share dialog with a pre-composed tweet.
- * @param {Object} dot - { lat, lng, type, name, region, id }
- * @param {string} missionLog - AI-generated mission log text
+ * Open X share dialog with personalized OG card.
+ * @param {Object} dot
+ * @param {string} missionLog
  */
 export function shareOnX(dot, missionLog = '') {
   if (!dot?.id) {
@@ -19,49 +19,74 @@ export function shareOnX(dot, missionLog = '') {
     return
   }
 
+  // ✅ Safe values
+  const safeName = String(dot.name || 'Anonymous').slice(0, 18)
+
+  const safeLat = Number(dot.lat || 0).toFixed(2)
+  const safeLng = Number(dot.lng || 0).toFixed(2)
+
   const emoji = TYPE_EMOJI[dot.type] ?? '📍'
-  const coords = formatCoords(dot.lat, dot.lng)
-  const name = dot.name ? `"${dot.name}" ` : ''
-  const region = dot.region ? `near ${dot.region}` : 'on Mars'
 
-  // ✅ Clean URL — no cache busting params
-const params = new URLSearchParams({
-  id: dot.id,
-  name: dot.name || 'Anonymous',
-  lat: dot.lat,
-  lng: dot.lng,
-  v: Date.now(),
-})
+  const coords = formatCoords(safeLat, safeLng)
 
-const shareUrl = `${APP_URL}/dot/${dot.id}?${params.toString()}`
+  const region = dot.region
+    ? `near ${dot.region}`
+    : 'on Mars'
 
-  // Clean first sentence
+  // ✅ IMPORTANT
+  // Do NOT repeat id in query params
+  const params = new URLSearchParams({
+    name: safeName,
+    lat: safeLat,
+    lng: safeLng,
+    v: Date.now(),
+  })
+
+  // ✅ Correct clean share URL
+  const shareUrl =
+    `${APP_URL}/dot/${dot.id}?${params.toString()}`
+
+  // optional AI snippet
   const logSnippet = missionLog
-    ? missionLog.split('.')[0].replace(/\n/g, ' ').trim() + '.'
+    ? missionLog
+        .split('.')[0]
+        .replace(/\n/g, ' ')
+        .trim() + '.'
     : ''
 
-  // ✅ CLEAN TEXT (no URL inside)
+  // ✅ Cleaner tweet text
   const text = [
-    `${emoji} Just planted ${name}at ${coords} ${region}.`,
+    `${emoji} ${safeName} planted a mark at ${coords} ${region}.`,
     logSnippet,
-    `One planet. Eight billion dots.`,
-    `#SolMars #Mars`,
+    'One planet. Eight billion dots.',
+    '#SolMars #Mars',
   ]
     .filter(Boolean)
     .join('\n\n')
 
-  // ✅ IMPORTANT: url FIRST (more reliable parsing by X)
+  // ✅ X intent URL
   const tweetUrl =
     `https://x.com/intent/tweet?url=${encodeURIComponent(shareUrl)}` +
     `&text=${encodeURIComponent(text)}`
 
-  window.open(tweetUrl, '_blank', 'noopener,noreferrer')
+  window.open(
+    tweetUrl,
+    '_blank',
+    'noopener,noreferrer'
+  )
 }
 
 /**
- * Build a share URL for a specific dot
+ * Build reusable share URL
  */
 export function buildDotShareUrl(dot) {
   if (!dot?.id) return APP_URL
-  return `${APP_URL}/dot/${dot.id}`
+
+  const params = new URLSearchParams({
+    name: String(dot.name || 'Anonymous').slice(0, 18),
+    lat: Number(dot.lat || 0).toFixed(2),
+    lng: Number(dot.lng || 0).toFixed(2),
+  })
+
+  return `${APP_URL}/dot/${dot.id}?${params.toString()}`
 }
