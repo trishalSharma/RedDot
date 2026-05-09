@@ -22,7 +22,7 @@ registerFont(path.join(__dirname, 'fonts/Inter-Regular.ttf'), {
 
 export default async function handler(req, res) {
   try {
-    // ✅ Dynamic data from URL
+    // ✅ Dynamic data
     const {
       id = '123',
       lat = '15.53',
@@ -30,8 +30,13 @@ export default async function handler(req, res) {
       name = 'Anonymous',
     } = req.query
 
-    // ✅ Prevent layout breaking
-    const safeName = String(name).slice(0, 18)
+    // ✅ Safe username
+    const rawName = String(name || 'Anonymous')
+
+    const safeName =
+      rawName.length > 18
+        ? rawName.slice(0, 18) + '…'
+        : rawName
 
     const width = 1200
     const height = 630
@@ -41,6 +46,7 @@ export default async function handler(req, res) {
 
     // 🌌 Deep cinematic background
     const bg = ctx.createLinearGradient(0, 0, 0, height)
+
     bg.addColorStop(0, '#010203')
     bg.addColorStop(1, '#06080f')
 
@@ -94,7 +100,7 @@ export default async function handler(req, res) {
       ctx.fill()
     }
 
-    // 🌍 Mars image
+    // 🌍 Mars
     const mars = await loadImage(
       'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg'
     )
@@ -204,20 +210,26 @@ export default async function handler(req, res) {
     ctx.fill()
 
     // 🧠 LEFT CONTENT
-
     ctx.textAlign = 'left'
 
-    // username
-    ctx.fillStyle = '#888'
-    ctx.font = 'normal 22px Inter'
-    ctx.fillText(`@${safeName}`, 80, 130)
+    // username (only if custom name entered)
+    if (safeName !== 'Anonymous') {
+      ctx.fillStyle = '#888'
+      ctx.font = 'normal 22px Inter'
+      ctx.fillText(`@${safeName}`, 80, 130)
+    }
 
     // title
     ctx.fillStyle = '#ffffff'
     ctx.font = 'bold 66px Inter'
 
-    ctx.fillText(`${safeName} planted`, 80, 210)
-    ctx.fillText('on Mars.', 80, 290)
+    if (safeName === 'Anonymous') {
+      ctx.fillText('Your mark is now', 80, 210)
+      ctx.fillText('on Mars.', 80, 290)
+    } else {
+      ctx.fillText(`${safeName} planted`, 80, 210)
+      ctx.fillText('on Mars.', 80, 290)
+    }
 
     // accent line
     ctx.fillStyle = '#ff5a3c'
