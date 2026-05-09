@@ -20,7 +20,12 @@ export function shareOnX(dot, missionLog = '') {
   }
 
   // ✅ Safe values
-  const safeName = String(dot.name || 'Anonymous').slice(0, 18)
+const rawName = String(dot.name || 'Anonymous')
+
+const safeName =
+  rawName.length > 18
+    ? rawName.slice(0, 18) + '…'
+    : rawName
 
   const safeLat = Number(dot.lat || 0).toFixed(2)
   const safeLng = Number(dot.lng || 0).toFixed(2)
